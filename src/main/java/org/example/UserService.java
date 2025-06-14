@@ -18,13 +18,14 @@ public class UserService {
     }
 
     @Transactional
-    public void createUser(UserDTO userDTO) {
+    public UserDTO createUser(UserDTO userDTO) {
         if(userRepository.existsByEmail(userDTO.getEmail())){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ошибка при попытке создания пользователя: введенный вами email " + userDTO.getEmail() + " уже занят!");
         }
         User user = modelMapper.map(userDTO, User.class);
         user.setCreatedAt(LocalDateTime.now());
         userRepository.save(user);
+        return modelMapper.map(user, UserDTO.class);
     }
 
     @Transactional
@@ -35,11 +36,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(Long id, UserDTO userDTO) {
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
         User currentUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ошибка при попытке обновления данных: пользователя с ID " + id + " не существует!"));
         modelMapper.map(userDTO, currentUser);
         currentUser.setId(id);
+        return modelMapper.map(currentUser, UserDTO.class);
     }
 
     @Transactional
