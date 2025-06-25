@@ -50,9 +50,6 @@ public class User {
     }
 
     public void setAge(int age) throws IllegalArgumentException {
-        if (age < 0 || age > 120) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ошибка при попытке создания пользователя: введенное вами значение возраста " + age + " не корректно!");
-        }
         this.age = age;
     }
 

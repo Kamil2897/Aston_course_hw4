@@ -1,19 +1,24 @@
 package org.example;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 import java.time.LocalDateTime;
 
 public class UserDTO {
-    private int id;
+    private Long id;
     private String name;
     private String email;
+    @Min(value = 0, message = "Ошибка при попытке создания пользователя: возраст не может быть отрицательным")
+    @Max(value = 120, message = "Ошибка при попытке создания пользователя: возраст не может превышать 120")
     private int age;
     private LocalDateTime createdAt;
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
