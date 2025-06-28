@@ -157,11 +157,12 @@ public class UserControllerTest {
         Long id = 1L;
         String requestBody = """
                 {
+                "id": %d,
                 "name": "Test",
                 "email": "test@gmail.com",
                 "age": 21
                 }
-                """;
+                """.formatted(id);
         UserDTO userDTO = new UserDTO();
         userDTO.setId(id);
         userDTO.setName("Test");
