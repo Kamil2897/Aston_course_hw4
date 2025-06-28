@@ -1,13 +1,13 @@
-import org.example.UserController;
-import org.example.UserDTO;
-import org.example.UserService;
+import org.example.controller.UserController;
+import org.example.dto.UserDTO;
+import org.example.service.UserService;
+import org.example.exception.ValidationExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,9 +34,10 @@ public class UserControllerTest {
 
     private MockMvc mockMvc;
 
+    private ValidationExceptionHandler exceptionHandler = new ValidationExceptionHandler();
     @BeforeEach
     void setUp() {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+        this.mockMvc = MockMvcBuilders.standaloneSetup(userController).setControllerAdvice(exceptionHandler).build();
     }
 
     @Test
@@ -88,22 +88,37 @@ public class UserControllerTest {
     }
 
     @Test
-    void createUser_WhenUsersAgeIsNotCorrect() throws Exception {
+    void createUser_WhenUsersAgeIsNegative() throws Exception {
         int age = -21;
         String requestBody = """
                 {
                 "name": "Test",
                 "email": "test@gmail.com",
-                "age": "%d"
+                "age": %d
                 }
                 """.formatted(age);
-        when(userService.createUser(any(UserDTO.class)))
-                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ошибка при попытке создания пользователя: введенное вами значение возраста " + age + " не корректно!"));
         mockMvc.perform(post("/api/users/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest());
-        verify(userService, times(1)).createUser(any(UserDTO.class));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.age").value("Возраст не может быть отрицательным"));
+    }
+
+    @Test
+    void createUser_WhenUsersAgeIsTooHigh() throws Exception {
+        int age = 121;
+        String requestBody = """
+                {
+                "name": "Test",
+                "email": "test@gmail.com",
+                "age": %d
+                }
+                """.formatted(age);
+        mockMvc.perform(post("/api/users/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.age").value("Возраст не может превышать 120"));
     }
 
     @Test
@@ -186,23 +201,39 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUser_WhenUsersAgeIsNotCorrect() throws Exception {
+    void updateUser_WhenUsersAgeIsNegative() throws Exception {
         Long id = 1L;
         int age = -21;
         String requestBody = """
                 {
                 "name": "Test",
                 "email": "test@gmail.com",
-                "age": "%d"
+                "age": %d
                 }
                 """.formatted(age);
-        when(userService.updateUser(eq(id), any(UserDTO.class)))
-                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ошибка при попытке создания пользователя: введенное вами значение возраста " + age + " не корректно!"));
         mockMvc.perform(put("/api/users/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest());
-        verify(userService, times(1)).updateUser(eq(id), any(UserDTO.class));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.age").value("Возраст не может быть отрицательным"));
+    }
+
+    @Test
+    void updateUser_WhenUsersAgeIsTooHigh() throws Exception {
+        Long id = 1L;
+        int age = 151;
+        String requestBody = """
+                {
+                "name": "Test",
+                "email": "test@gmail.com",
+                "age": %d
+                }
+                """.formatted(age);
+        mockMvc.perform(put("/api/users/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.age").value("Возраст не может превышать 120"));
     }
 
     @Test

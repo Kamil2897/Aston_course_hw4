@@ -1,16 +1,21 @@
-package org.example;
+package org.example.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDateTime;
 
 public class UserDTO {
     private Long id;
+    @NotBlank(message = "Поле 'name' не может быть пустым")
+    @Pattern(regexp = "^[a-zA-Z]+$", message = "Поле 'name' не должно содержать цифр или символов")
     private String name;
+    @NotBlank(message = "Поле 'email' не может быть пустым")
     private String email;
-    @Min(value = 0, message = "Ошибка при попытке создания пользователя: возраст не может быть отрицательным")
-    @Max(value = 120, message = "Ошибка при попытке создания пользователя: возраст не может превышать 120")
+    @Min(value = 0, message = "Возраст не может быть отрицательным")
+    @Max(value = 120, message = "Возраст не может превышать 120")
     private int age;
     private LocalDateTime createdAt;
 

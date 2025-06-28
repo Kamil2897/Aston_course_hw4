@@ -1,6 +1,9 @@
-package org.example;
+package org.example.service;
 
 import jakarta.transaction.Transactional;
+import org.example.model.User;
+import org.example.dto.UserDTO;
+import org.example.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,9 @@ public class UserService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         User currentUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ошибка при попытке обновления данных: пользователя с ID " + id + " не существует!"));
+        if(userRepository.existsByEmail(userDTO.getEmail())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ошибка при попытке создания пользователя: введенный вами email " + userDTO.getEmail() + " уже занят!");
+        }
         modelMapper.map(userDTO, currentUser);
         currentUser.setId(id);
         return modelMapper.map(currentUser, UserDTO.class);
